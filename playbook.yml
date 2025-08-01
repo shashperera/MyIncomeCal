@@ -38,9 +38,27 @@
         password: "{{ db_password }}"
         role_attr_flags: CREATEDB,LOGIN
 
-    - name: Create PostgreSQL database
+    - name: Create income database
       become_user: postgres
       community.postgresql.postgresql_db:
         name: "{{ db_name }}"
         owner: "{{ db_user }}"
         encoding: UTF-8
+            
+    - name: Create income tables
+      community.postgresql.postgresql_query:
+        db: "{{ db_name }}"
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        query: |
+          CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(50) NOT NULL,
+            email VARCHAR(100) NOT NULL
+          );
+          CREATE TABLE IF NOT EXISTS incomes (
+            id SERIAL PRIMARY KEY,
+            user_id INT REFERENCES users(id),
+            amount NUMERIC NOT NULL,
+            received_at DATE NOT NULL
+          );
